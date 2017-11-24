@@ -1,9 +1,11 @@
 ---
-title: "Converted Loan Predictor"
-output: html_notebook
+title: "Data Science Workflow"
+output:
+  html_document:
+    df_print: paged
 ---
 
-Data Science Workflow
+
 
 1. Define the Problem
 What is the problem? Provide formal and informal definitions.
@@ -34,33 +36,84 @@ Data visualizations such as with histograms.
 
 ```{r}
 #Read training dataset in dataframe
-read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_train.csv"))
+df <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_train.csv"))
+df
 ```
 ```{r}
 #Reading second dataset in data frame
-read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_test.csv"))
+af <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_test.csv"))
+af
 ```
 ```{r}
-df <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_train.csv"), nrows = 1)
-df
+#Display row 1
+cf <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_test.csv"), nrows = 1)
+cf
 
 ```
 ```{r}
 #Shows all non-numeric columns
 nums <- sapply(df, is.factor)
-df[ , nums]
+df[,nums]
 ```
 
 ```{r}
-df <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_train.csv"))
-for (gen in df['Gender']){
-  if (as.character(gen) != "Blah" && as.character(gen) != "Female"){
-    df['Gender'][gen,] <- as.factor("0")
-  }else{
-    
-  }
-}
+df <- read.csv(url("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/lp_train.csv"), na.strings = c("","NA"))
+
+#Gender
 df['Gender']
+
+#Married
+df['Married']
+
+#Dependents
+df['Dependents']
+
+#Self_Employed
+df['Self_Employed']
+
+#LoanAmount
+df['LoanAmount']
+
+#Loan_Amount_Term
+df['Loan_Amount_Term']
+
+#Credit_History
+df['Credit_History']
+
+#Education
+df['Education']
+
+#Property_Area
+df['Property_Area']
+
+#Loan_ID
+df['Loan_ID']
+```
+
+
+```{r}
+#Shows all non-numeric columns again
+nums <- sapply(df, is.factor)
+df[,nums]
+```
+
+```{r}
+library(caret)
+library(randomForest)
+X <- df['Loan_Status'][,0]
+Y <- df['Loan_Status'][,1]
+X
+Y
+validation_size <- 0.20
+set.seed(7)
+X_train <- sample(X, size = validation_size)
+X_validation <- sample(X, size = validation_size)
+Y_train <- sample(X, size = validation_size)
+Y_validation <- sample(X, size = validation_size)
+
+X_train
+
+rf = randomForest(Y_train)
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
