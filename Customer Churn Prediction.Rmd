@@ -1,0 +1,113 @@
+---
+title: "Customer Churn Prediction"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+```{r}
+#JUST COMMENTS
+# This data set aims to measure the subscription rates of customers over time. Churn represents discontinuation of a product by a customer which is represented by a True value or 1 when it occurs for a customer. We wish to correlate this statistic with variabls such as basic customer information as well as calling and messaging rates and information. 
+```
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+#Handle Imports
+library(stringr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(ISLR)
+library(tree)
+require(randomForest)
+```
+
+Data Collection and Cleaning
+```{r}
+#Data Collection
+data <- read.csv("https://raw.githubusercontent.com/3Blades/notebook-templates/master/python/Datasets/Churn_Data.csv")
+
+#I want to fix the column name for Churn.
+colnames(data)[which(names(data) == "Churn.")] <- "Churn"
+
+#Now I would like to clean my Churn column values and make it a factor.
+Churn <- data["Churn"]
+Placeholder <- NULL
+for (a in data$Churn){
+  if (a == "False."){
+    Placeholder <- c(Placeholder, "False")
+  } else if(a == "True."){
+    Placeholder <- c(Placeholder, "True")
+  }else{
+    Placeholder <- c(Placeholder, "None")
+  }
+}
+data$Churn <- as.factor(Placeholder)
+data
+```
+Data Partitioning
+```{r}
+#Partition Data into Sample test and train sets
+# 50% sample size
+smp_size <- floor(0.8 * nrow(data))
+
+#Set seed 
+set.seed(123)
+train_data <- sample(1:nrow(data), nrow(data)/2)
+
+train <- data[train_data,]
+test <- data[-train_data,]
+
+train
+test
+```
+
+```{r}
+# Attempt to make area code a factor for decision tree
+unique(data$Area.Code)
+data$Area.Code <- as.factor(data$Area.Code)
+
+#Decision tree to analyze Churn in relation to suspected variables
+#We eliminated calls as a variable having possible effect
+frmla = data$Churn ~ data$CustServ.Calls + data$Area.Code + data$Account.Length + data$Int.l.Plan + data$VMail.Plan + data$Day.Calls + data$Day.Charge + data$Eve.Calls + data$Eve.Charge + data$Night.Calls + data$Night.Charge + data$Intl.Charge + data$Intl.Calls 
+tree_model = tree(frmla, method = "class", data = train)
+
+summary(tree_model)
+plot(tree_model)
+text(tree_model, pretty = 0)
+
+#After analysis, we see that the only variable that have an effect are: Day.Charge, CusrServ.Calls, Int.l.Plan, Eve.Charge, VMail.Plan, Intl.Calls and Intl.Charge. International variable seem to be of interest in deciding the churning factor of customers.
+
+```
+
+```{r}
+#Logistic Regression
+frmla = data$Churn ~ data$CustServ.Calls + data$Int.l.Plan + data$VMail.Plan + data$Day.Charge + data$Eve.Charge + data$Intl.Charge + data$Intl.Calls 
+model <- glm (frmla, data = train, family = binomial)
+summary(model)
+
+ggplot(train, aes(x=CustServ.Calls, y=Area.Code)) + geom_point() + 
+stat_smooth(method="glm", family="binomial", se=FALSE)
+
+#After plotting multiple Y-axes I can see there is no correlaiton relation among the variables found to hold importance in the decision tree models.
+# I have found a weak positive correlation between area code and Customer service calls which could be of use. 
+
+ggplot(train, aes(x=CustServ.Calls, y=Intl.Charge)) + geom_point() + 
+stat_smooth(method="glm", family="binomial", se=FALSE)
+
+#We also discovered a very weak negative correlation between International Charge and Customer Service Calls. However, no other variables showed any real important correlations.
+```
+
+```{r}
+#Random Forests
+frmla = data$CustServ.Calls ~ data$CustServ.Calls + data$Area.Code + data$Account.Length + data$Int.l.Plan + data$VMail.Plan + data$Day.Calls + data$Day.Charge + data$Eve.Calls + data$Eve.Charge + data$Night.Calls + data$Night.Charge + data$Intl.Charge + data$Intl.Calls + data$Area.Code
+Random_Forest = randomForest(frmla, data = train)
+Random_Forest
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

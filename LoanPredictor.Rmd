@@ -98,7 +98,6 @@ df[,nums]
 ```
 
 ```{r}
-<<<<<<< HEAD:R/LoanPredictor.Rmd
 library(randomForest)
 Y <- df['Loan_Status']
 Y
@@ -111,7 +110,6 @@ rf = randomForest(Y,data = Y_train,ntree = 50)
 rf
 ```
 ```{r}
-=======
 library(caret)
 library(randomForest)
 X <- df['Loan_Status'][,0]
@@ -128,7 +126,6 @@ Y_validation <- sample(X, size = validation_size)
 X_train
 
 rf = randomForest(Y_train)
->>>>>>> b719596f569657db57d4f6bda721e22790837c86:LoanPredictor.Rmd
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
